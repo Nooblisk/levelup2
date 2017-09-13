@@ -8,12 +8,9 @@ export const loadState = () => {
 		}
 		const pureObject = JSON.parse(serializedState);
 		const immutableData = {};
-
-		for (const name in pureObject) {
-			if (pureObject.hasOwnProperty(name)) {
-				immutableData[name] = Immutable.fromJS(pureObject[name]);
-			}
-		}
+		Object.keys(pureObject).forEach((name) => {
+			immutableData[name] = Immutable.fromJS(pureObject[name]);
+		});
 
 		return immutableData;
 	} catch (err) {
@@ -21,10 +18,17 @@ export const loadState = () => {
 	}
 };
 
-export const saveState = (state) => {
+export const saveAuthorizationData = ({ accessToken, refreshToken }) => {
 	try {
-		const serializedState = JSON.stringify(state);
-		localStorage.setItem('state', serializedState);
+		const serializedState = localStorage.getItem('state');
+		if (serializedState === null) {
+			return {};
+		}
+		const pureObject = JSON.parse(serializedState);
+		pureObject.authorization = pureObject.authorization || {};
+		pureObject.authorization.access_token = accessToken;
+		pureObject.authorization.refresh_token = refreshToken;
+		localStorage.setItem('state', JSON.stringify(pureObject));
 	} catch (err) {
 		console.error(err); // TODO Remove
 	}
